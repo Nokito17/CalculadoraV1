@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Presupuestos - Taller</title>
+    <style>
+        :root {
+            --bg-color: #121212;
+            --card-bg: #1e1e1e;
+            --text-color: #e0e0e0;
+            --accent-color: #00adb5;
+            --danger-color: #ff4444;
+        }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+        .calculator-card {
+            background-color: var(--card-bg);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+            width: 100%;
+            max-width: 400px;
+        }
+        h2 {
+            text-align: center;
+            color: var(--accent-color);
+            margin-top: 0;
+            font-size: 22px;
+        }
+        .input-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .input-group {
+            flex: 1;
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        input[type="number"] {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #333;
+            background-color: #2a2a2a;
+            color: #fff;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background-color: #252525;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        .checkbox-group input {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--accent-color);
+        }
+        .slider-container {
+            margin-bottom: 20px;
+        }
+        .slider-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+        input[type="range"] {
+            width: 100%;
+            accent-color: var(--accent-color);
+            height: 6px;
+        }
+        .fixed-costs {
+            background-color: #252525;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 13px;
+            border-left: 4px solid var(--accent-color);
+        }
+        .fixed-costs div {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+        .fixed-costs div:last-child {
+            margin-bottom: 0;
+        }
+        .results-block {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .result-container {
+            text-align: center;
+            background-color: #2a2a2a;
+            padding: 12px;
+            border-radius: 10px;
+            border: 2px dashed var(--accent-color);
+        }
+        .result-container.no-repair {
+            border-color: var(--danger-color);
+        }
+        .result-title {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #aaa;
+        }
+        .result-price {
+            font-size: 24px;
+            font-weight: bold;
+            color: #fff;
+            margin-top: 5px;
+        }
+        .no-repair .result-price {
+            color: var(--danger-color);
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator-card">
+        <h2>Presupuesto Reparación</h2>
+        
+        <div class="input-row">
+            <div class="input-group">
+                <label for="costoRepuesto">Repuesto ($)</label>
+                <input type="number" id="costoRepuesto" value="10000" oninput="calcular()">
+            </div>
+            <div class="input-group">
+                <label for="costoDiagnostico">Diagnóstico ($)</label>
+                <input type="number" id="costoDiagnostico" value="5000" oninput="calcular()">
+            </div>
+        </div>
+
+        <div class="checkbox-group">
+            <input type="checkbox" id="sumarDiag" onchange="calcular()">
+            <label for="sumarDiag">Sumar diagnóstico al precio del arreglo</label>
+        </div>
+        
+        <div class="slider-container">
+            <div class="slider-header">
+                <label for="manoObra">Mano de Obra</label>
+                <span id="valManoObra">50%</span>
+            </div>
+            <input type="range" id="manoObra" min="10" max="200" value="50" oninput="calcular()">
+        </div>
+        
+        <div class="slider-container">
+            <div class="slider-header">
+                <label for="ganancia">Ganancia Comercial</label>
+                <span id="valGanancia">30%</span>
+            </div>
+            <input type="range" id="ganancia" min="10" max="150" value="30" oninput="calcular()">
+        </div>
+        
+        <div class="fixed-costs">
+            <div><span>Riesgo (Fijo):</span> <span>25%</span></div>
+            <div><span>Garantía (Fijo):</span> <span>10%</span></div>
+        </div>
+        
+        <div class="results-block">
+            <div class="result-container">
+                <div class="result-title">Si acepta la reparación</div>
+                <div class="result-price" id="precioFinal">$0,00</div>
+            </div>
+            
+            <div class="result-container no-repair">
+                <div class="result-title">Si NO acepta (Solo Diagnóstico)</div>
+                <div class="result-price" id="precioRechazado">$0,00</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function calcular() {
+            const costoRepuesto = parseFloat(document.getElementById('costoRepuesto').value) || 0;
+            const costoDiag = parseFloat(document.getElementById('costoDiagnostico').value) || 0;
+            const sumarDiag = document.getElementById('sumarDiag').checked;
+            
+            const porcManoObra = parseFloat(document.getElementById('manoObra').value);
+            const porcGanancia = parseFloat(document.getElementById('ganancia').value);
+            
+            const porcRiesgo = 25;
+            const porcGarantia = 10;
+            
+            document.getElementById('valManoObra').innerText = porcManoObra + '%';
+            document.getElementById('valGanancia').innerText = porcGanancia + '%';
+            
+            // Cálculo del arreglo base
+            const manoObra = costoRepuesto * (porcManoObra / 100);
+            const ganancia = costoRepuesto * (porcGanancia / 100);
+            const riesgo = costoRepuesto * (porcRiesgo / 100);
+            const garantia = costoRepuesto * (porcGarantia / 100);
+            
+            let totalReparacion = costoRepuesto + manoObra + ganancia + riesgo + garantia;
+            
+            // Si decide sumarle el diagnóstico arriba del arreglo
+            if (sumarDiag) {
+                totalReparacion += costoDiag;
+            }
+            
+            // Formatear a moneda local
+            const formatoMoneda = (valor) => '$' + valor.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            
+            document.getElementById('precioFinal').innerText = formatoMoneda(totalReparacion);
+            document.getElementById('precioRechazado').innerText = formatoMoneda(costoDiag);
+        }
+        
+        calcular();
+    </script>
+</body>
+</html>
